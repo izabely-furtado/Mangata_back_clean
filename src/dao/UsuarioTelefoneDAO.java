@@ -1,122 +1,85 @@
 package dao;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
-import conexao.Conexao;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.OptimisticLockException;
+import javax.persistence.Persistence;
+import javax.transaction.Transactional;
+
 import modelo.UsuarioTelefone;
 
 public class UsuarioTelefoneDAO {
-	private Connection connection;
-	private PreparedStatement statement;
-	private boolean estadoOperacao;
+	private EntityManagerFactory emf = Persistence.createEntityManagerFactory("configBD");
+    private EntityManager em;
 	
-	public boolean inserirUsuarioTelefone(UsuarioTelefone usuarioTelefone) throws SQLException {
-		String sql = null;
-		estadoOperacao = false;
-		connection = obterConexao();
-		
-		try {
-			connection.setAutoCommit(false);
-			sql = "INSERT INTO usuario_telefone(id_usuario, ddd, numero_telefone, id_telefone_tipo) VALUES(?, ?, ?, ?)";
-			
-			statement = connection.prepareStatement(sql);
-			
-			statement.setInt(1, usuarioTelefone.getId_usuario());
-			statement.setInt(2, usuarioTelefone.getDdd());
-			statement.setString(3, usuarioTelefone.getNumero_telefone());
-			statement.setInt(4, usuarioTelefone.getId_telefone_tipo());
-			
-			estadoOperacao =  statement.executeUpdate() > 0;
-			
-			
-			connection.commit();
-			statement.close();
-		} catch (SQLException e) {
-			connection.rollback();
-			e.printStackTrace();
-		}finally{
-			System.out.println("fechou");
-			connection.close();
-		}
-		
-		return estadoOperacao;
-	}
-	
-	public List<UsuarioTelefone> listarUsuarioTelefone(int id_usuario) throws SQLException {
-		ResultSet resultSet = null;
-		List<UsuarioTelefone> arrayUsuarioTelefone = new ArrayList<>();
-		
-		String sql = null;
-		estadoOperacao = false;
-		connection = obterConexao();
+    public UsuarioTelefoneDAO() {
+    	em = emf.createEntityManager();
+    }
+    
+    public UsuarioTelefone obter(int id) {
+        em.getTransaction().begin();
+        UsuarioTelefone usuario_teletone = em.find(UsuarioTelefone.class, id);
+        em.getTransaction().commit();
+        return usuario_teletone;
+    }
+    
+    public UsuarioTelefone criar(UsuarioTelefone usuario_teletone) {
+        em.getTransaction().begin();
+        em.persist(usuario_teletone);
+        em.getTransaction().commit();
+        return usuario_teletone;
+    }
+    
+    public UsuarioTelefone atualizar(UsuarioTelefone usuario_teletone) {
+        em.getTransaction().begin();
+        usuario_teletone = em.merge(usuario_teletone);
+        em.getTransaction().commit();
+        return usuario_teletone;
+    }
 
-		try {
-			sql = "SELECT * FROM usuario_telefone WHERE id_usuario=?";
-			statement = connection.prepareStatement(sql);
-			statement.setInt(1, id_usuario);
 
-			resultSet = statement.executeQuery();
-			
+    public void remover(UsuarioTelefone usuario_teletone) {
+        em.getTransaction().begin();
+        em.remove(usuario_teletone);
+        em.getTransaction().commit();
+    }
+    
+    @Transactional
+    public void removerByIDUsuario(int id_usuario) {
+       int isSuccessful = em
+    		    .createQuery("delete from usuario_telefone p where p.id_usuario=:id_usuario")
+                .setParameter("id_usuario", id_usuario)
+                .executeUpdate();
+        if (isSuccessful == 0) {
+            throw new OptimisticLockException("modified concurrently");
+        }
+    }
 
-			while(resultSet.next()) {
-				UsuarioTelefone ut = new UsuarioTelefone();
-				ut.setId_usuario(resultSet.getInt(1));
-				ut.setDdd(resultSet.getInt(2));
-				ut.setNumero_telefone(resultSet.getString(3));
-				ut.setId_telefone_tipo(resultSet.getInt(4));
-				arrayUsuarioTelefone.add(ut);
-				
-			}
-
-			statement.close();
-			resultSet.close();
-		}catch (SQLException e) {
-			e.printStackTrace();
-		}finally{
-			System.out.println("fechou");
-			connection.close();
-		}
-
-		return arrayUsuarioTelefone;
-	}
-	public boolean deletarTodosOsNumerosDoUsuario(int id_usuario) throws SQLException {
-		String sql = null;
-		estadoOperacao = false;
-		connection = obterConexao();
-
-		try {
-			connection.setAutoCommit(false);
-			sql = "DELETE FROM usuario_telefone WHERE id_usuario = ?";
-			
-			statement = connection.prepareStatement(sql);
-			
-			statement.setInt(1, id_usuario);
-
-			estadoOperacao = statement.executeUpdate() > 0 ;
-			connection.commit();
-			statement.close();
-			
-			
-		}
-		catch (SQLException e) {
-			connection.rollback();
-			e.printStackTrace();
-		}finally{
-			System.out.println("fechou");
-			connection.close();
-		}
-		
-		
-		return estadoOperacao;
-	}
-	
-	private Connection obterConexao() throws SQLException {
-		return Conexao.getConnection();
-	}	
+    @SuppressWarnings("unchecked")
+	public List<UsuarioTelefone> getAll(){
+        List<UsuarioTelefone> lista = em
+                .createQuery("SELECT p FROM usuario_telefone p")
+                .getResultList();
+        return lista;
+    }
+    
+    @SuppressWarnings("unchecked")
+	public List<UsuarioTelefone> getAllByUsuario(int id_usuario){
+        List<UsuarioTelefone> lista = em
+                .createQuery("SELECT p FROM usuario_telefone p WHERE id_usuario = :id_usuario")
+                .setParameter("id_usuario", id_usuario)
+                .getResultList();
+        return lista;
+    }
+    
+    public UsuarioTelefone getAllByID(int id_usuario){
+        UsuarioTelefone retorno = (UsuarioTelefone) em
+                .createQuery("SELECT p FROM usuario_telefone p WHERE id_usuario = :id_usuario")
+                .setParameter("id_usuario", id_usuario)
+                .getSingleResult();
+        return retorno;
+    }	
 
 }

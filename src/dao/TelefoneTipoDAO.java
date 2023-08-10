@@ -1,91 +1,64 @@
 package dao;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
-import conexao.Conexao;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+
 import modelo.TelefoneTipo;
 
-
 public class TelefoneTipoDAO {
-	private Connection connection;
-	private PreparedStatement statement;
-//	private boolean estadoOperacao;
+	private EntityManagerFactory emf = Persistence.createEntityManagerFactory("configBD");
+    private EntityManager em;
 	
-	public List<TelefoneTipo> listarTelefoneTipo() throws SQLException {
-		ResultSet resultSet = null;
-		List<TelefoneTipo> listaProdutos = new ArrayList<>();
-		
-		String sql = null;
-		//estadoOperacao = false;
-		connection = obterConexao();
+    public TelefoneTipoDAO() {
+    	em = emf.createEntityManager();
+    }
+    
+    public TelefoneTipo obter(int id) {
+        em.getTransaction().begin();
+        TelefoneTipo telefoneTipo = em.find(TelefoneTipo.class, id);
+        em.getTransaction().commit();
+        return telefoneTipo;
+    }
+    
+    public TelefoneTipo criar(TelefoneTipo telefoneTipo) {
+        em.getTransaction().begin();
+        em.persist(telefoneTipo);
+        em.getTransaction().commit();
+        return telefoneTipo;
+    }
+    
+    public TelefoneTipo atualizar(TelefoneTipo telefoneTipo) {
+        em.getTransaction().begin();
+        telefoneTipo = em.merge(telefoneTipo);
+        em.getTransaction().commit();
+        return telefoneTipo;
+    }
 
-		try {
-			sql = "SELECT * FROM telefone_tipo";
-			statement = connection.prepareStatement(sql);
-			resultSet = statement.executeQuery(sql);
-			
-			while(resultSet.next()) {
-				TelefoneTipo tt = new TelefoneTipo();
-				tt.setId_telefone_tipo(resultSet.getInt(1));
-				tt.setNome(resultSet.getString(2));
-				
-				listaProdutos.add(tt);
-				
-			}
-			
-		}catch (SQLException e) {
-			e.printStackTrace();
-		}finally{
-			System.out.println("fechou");
-			connection.close();
-		}
-		
-		return listaProdutos;
-	}
-	public List<TelefoneTipo> listarTelefoneTipoPorID(int id_telefone_tipo) throws SQLException {
-		ResultSet resultSet = null;
-		List<TelefoneTipo> arrayTelefoneTipo = new ArrayList<>();
-		
-		String sql = null;
-		//estadoOperacao = false;
-		connection = obterConexao();
 
-		try {
-			sql = "SELECT * FROM telefone_tipo WHERE id_telefone_tipo =?";
-			statement=connection.prepareStatement(sql);
-			statement.setInt(1, id_telefone_tipo);
-			
-			resultSet = statement.executeQuery();
-			
-			if(resultSet.next()) {
-				TelefoneTipo tt=new TelefoneTipo();
-				
-				tt.setId_telefone_tipo(resultSet.getInt(1));
-				tt.setNome(resultSet.getString(2));
-				
-				arrayTelefoneTipo.add(tt);
+    public void remover(TelefoneTipo telefoneTipo) {
+        em.getTransaction().begin();
+        em.remove(telefoneTipo);
+        em.getTransaction().commit();
+    }
 
-			}
-			statement.close();
-			resultSet.close();
-
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}finally{
-			System.out.println("fechou");
-			connection.close();
-		}
-
-		return arrayTelefoneTipo;
-	}
-	
-	private Connection obterConexao() throws SQLException {
-		return Conexao.getConnection();
-	}
+    @SuppressWarnings("unchecked")
+	public List<TelefoneTipo> getAll(){
+        List<TelefoneTipo> lista = em
+                .createQuery("SELECT p FROM telefone_tipo p")
+                .getResultList();
+        return lista;
+    }
+    
+    @SuppressWarnings("unchecked")
+	public List<TelefoneTipo> getAllByID(int id_telefone_tipo){
+        List<TelefoneTipo> lista = em
+                .createQuery("SELECT p FROM telefone_tipo p WHERE id_telefone_tipo = :id_telefone_tipo")
+                .setParameter("id_telefone_tipo", id_telefone_tipo)
+                .getResultList();
+        return lista;
+    }
 	
 }

@@ -1,7 +1,6 @@
 package controlador;
 
 import java.io.IOException;
-import java.sql.SQLException;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -53,7 +52,7 @@ public class LoginControlador extends HttpServlet {
 			try {
 				usuario.setEmail(request.getParameter("email"));
 				usuario.setSenha(request.getParameter("senha"));
-				usuario = usuarioDAO.login(usuario);
+				usuario = usuarioDAO.getByLogin(usuario);
 				HttpSession session=request.getSession();  
 		        
 				if(usuario.getId_usuario() != 0) {
@@ -74,7 +73,7 @@ public class LoginControlador extends HttpServlet {
 				}
 				
 				
-			} catch (SQLException e) {
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}

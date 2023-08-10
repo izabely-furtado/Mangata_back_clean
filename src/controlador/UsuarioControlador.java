@@ -47,21 +47,16 @@ public class UsuarioControlador extends HttpServlet {
 			TelefoneTipoDAO telefoneTipoDAO = new TelefoneTipoDAO();
 			List<TelefoneTipo> lista = new ArrayList<>();
 
-			try {
-				lista = telefoneTipoDAO.listarTelefoneTipo();
+			lista = telefoneTipoDAO.getAll();
 
-				for (TelefoneTipo telefoneTipo : lista) {
-					System.out.println(telefoneTipo);
-				}
-				
-				request.setAttribute("lista", lista);
-				System.out.println("Pressionou a opção de criar");
-				RequestDispatcher requestDispatcher = request.getRequestDispatcher("views/criar.jsp");
-				requestDispatcher.forward(request, response);
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			for (TelefoneTipo telefoneTipo : lista) {
+				System.out.println(telefoneTipo);
 			}
+			
+			request.setAttribute("lista", lista);
+			System.out.println("Pressionou a opção de criar");
+			RequestDispatcher requestDispatcher = request.getRequestDispatcher("views/criar.jsp");
+			requestDispatcher.forward(request, response);
 			
 			
 		} else if (opcao.equals("listar")) {
@@ -74,10 +69,10 @@ public class UsuarioControlador extends HttpServlet {
 			
 			try {
 
-				arrayUsuario = usuarioDAO.listarUsuarios();
+				arrayUsuario = usuarioDAO.getAll();
 
 				for (Usuario usuario : arrayUsuario) {
-					arrayUsuarioTelefone.add((ArrayList<UsuarioTelefone>) usuarioTelefoneDAO.listarUsuarioTelefone(usuario.getId_usuario()));
+					arrayUsuarioTelefone.add((ArrayList<UsuarioTelefone>) usuarioTelefoneDAO.getAllByUsuario(usuario.getId_usuario()));
 				}
 				for(int i = 0; i < arrayUsuarioTelefone.size(); i++) {
 					if (arrayUsuarioTelefone.get(i).isEmpty()) {
@@ -87,7 +82,7 @@ public class UsuarioControlador extends HttpServlet {
 					}
 					ArrayList<TelefoneTipo> listTelefoneTipo = new ArrayList<>();
 					for (UsuarioTelefone usuarioTelefone : arrayUsuarioTelefone.get(i)) {
-						listTelefoneTipo.addAll((ArrayList<TelefoneTipo>) telefoneTipoDAO.listarTelefoneTipoPorID(usuarioTelefone.getId_telefone_tipo()));
+						listTelefoneTipo.addAll((ArrayList<TelefoneTipo>) telefoneTipoDAO.getAllByID(usuarioTelefone.getId_telefone_tipo()));
 					}
 
 					arrayTelefoneTipo.add(new ArrayList<>(listTelefoneTipo));
@@ -98,7 +93,7 @@ public class UsuarioControlador extends HttpServlet {
 				request.setAttribute("arrayTelefoneTipo", arrayTelefoneTipo);
 				RequestDispatcher requestDispatcher = request.getRequestDispatcher("views/listar.jsp");
 				requestDispatcher.forward(request, response);
-			} catch (SQLException e) {
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -119,9 +114,9 @@ public class UsuarioControlador extends HttpServlet {
 
 			
 			try {
-				u = usuarioDAO.listarUsuario(id_usuario);
-				arrayUsuarioTelefone = usuarioTelefoneDAO.listarUsuarioTelefone(u.getId_usuario());
-				listaTiposTelefone = telefoneTipoDAO.listarTelefoneTipo();
+				u = usuarioDAO.getAllByID(id_usuario);
+				arrayUsuarioTelefone = usuarioTelefoneDAO.getAllByUsuario(u.getId_usuario());
+				listaTiposTelefone = telefoneTipoDAO.getAll();
 				System.out.println(listaTiposTelefone);
 				request.setAttribute("usuario", u);
 				request.setAttribute("arrayUsuarioTelefone", arrayUsuarioTelefone);
@@ -130,7 +125,7 @@ public class UsuarioControlador extends HttpServlet {
 				RequestDispatcher requestDispatcher = request.getRequestDispatcher("views/editar.jsp");
 				requestDispatcher.forward(request, response);
 				
-			} catch (SQLException e) {
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -140,9 +135,9 @@ public class UsuarioControlador extends HttpServlet {
 
 			int id_usuario = Integer.parseInt(request.getParameter("id_usuario"));
 			try {
-				usuarioDAO.deletarUsuario(id_usuario);
+				usuarioDAO.removerByID(id_usuario);
 				System.out.println("Exclusão do id " + request.getParameter("id_usuario") + " realizado com sucesso!");
-				usuarioTelefoneDAO.deletarTodosOsNumerosDoUsuario(id_usuario);
+				usuarioTelefoneDAO.removerByIDUsuario(id_usuario);
 				System.out.println("Exclusão de todos os números do id " + request.getParameter("id_usuario") + " realizado com sucesso!");
 
 				HttpSession session=request.getSession();  
@@ -151,7 +146,7 @@ public class UsuarioControlador extends HttpServlet {
 				RequestDispatcher requestDispatcher = request.getRequestDispatcher("views/principal.jsp");
 				requestDispatcher.forward(request, response);
 
-			} catch (SQLException e) {
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -190,7 +185,7 @@ public class UsuarioControlador extends HttpServlet {
 			usuario.setSenha(request.getParameter("senha"));
 
 			try {
-				int id_usuario = (int) usuarioDAO.inserirUsuario(usuario);
+				int id_usuario = usuarioDAO.criar(usuario).getId_usuario();
 
 
 				if (request.getParameter("id_telefone_tipo01") != "") {
@@ -201,7 +196,7 @@ public class UsuarioControlador extends HttpServlet {
 					usuarioTelefone.setDdd(Integer.parseInt(request.getParameter("ddd01")));
 					usuarioTelefone.setId_usuario(id_usuario);
 	
-					usuarioTelefoneDAO.inserirUsuarioTelefone(usuarioTelefone);
+					usuarioTelefoneDAO.criar(usuarioTelefone);
 				}
 				
 				if (request.getParameter("id_telefone_tipo02") != "") {
@@ -212,7 +207,7 @@ public class UsuarioControlador extends HttpServlet {
 					usuarioTelefone.setDdd(Integer.parseInt(request.getParameter("ddd02")));
 					usuarioTelefone.setId_usuario(id_usuario);
 	
-					usuarioTelefoneDAO.inserirUsuarioTelefone(usuarioTelefone);
+					usuarioTelefoneDAO.criar(usuarioTelefone);
 			
 				}
 				
@@ -228,7 +223,7 @@ public class UsuarioControlador extends HttpServlet {
 					RequestDispatcher requestDispatcher = request.getRequestDispatcher("views/principal.jsp");					
 					requestDispatcher.forward(request, response);					
 				}
-			}catch (SQLException e) {
+			}catch (Exception e) {
 				e.printStackTrace();
 			}
 			
@@ -245,9 +240,9 @@ public class UsuarioControlador extends HttpServlet {
 
 			
 			try {
-				usuarioDAO.alterarUsuario(usuario);
+				usuarioDAO.atualizar(usuario);
 				System.out.println("Edição do usuario id " + request.getParameter("id_usuario") + " realizado com sucesso!");
-				usuarioTelefoneDAO.deletarTodosOsNumerosDoUsuario(Integer.parseInt(request.getParameter("id_usuario")));
+				usuarioTelefoneDAO.removerByIDUsuario(Integer.parseInt(request.getParameter("id_usuario")));
 				System.out.println("Exclusão de todos os números do id " + request.getParameter("id_usuario") + " realizado com sucesso!");
 				
 				if (request.getParameter("id_telefone_tipo01") != "") {
@@ -258,7 +253,7 @@ public class UsuarioControlador extends HttpServlet {
 					usuarioTelefone.setDdd(Integer.parseInt(request.getParameter("ddd01")));
 					usuarioTelefone.setId_usuario(Integer.parseInt(request.getParameter("id_usuario")));
 	
-					usuarioTelefoneDAO.inserirUsuarioTelefone(usuarioTelefone);
+					usuarioTelefoneDAO.criar(usuarioTelefone);
 					System.out.println("Criação do 1º numero do usuario id " + request.getParameter("id_usuario") + " realizado com sucesso!");
 				}
 				
@@ -270,7 +265,7 @@ public class UsuarioControlador extends HttpServlet {
 					usuarioTelefone.setDdd(Integer.parseInt(request.getParameter("ddd02")));
 					usuarioTelefone.setId_usuario(Integer.parseInt(request.getParameter("id_usuario")));
 	
-					usuarioTelefoneDAO.inserirUsuarioTelefone(usuarioTelefone);
+					usuarioTelefoneDAO.criar(usuarioTelefone);
 					System.out.println("Criação do 2º numero do usuario ido usuario id " + request.getParameter("id_usuario") + " realizado com sucesso!");
 			
 				}
@@ -282,7 +277,7 @@ public class UsuarioControlador extends HttpServlet {
 				RequestDispatcher requestDispatcher = request.getRequestDispatcher("views/principal.jsp");
 				requestDispatcher.forward(request, response);
 
-			} catch (SQLException e) {
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
