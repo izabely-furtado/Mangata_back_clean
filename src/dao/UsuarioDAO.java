@@ -18,7 +18,7 @@ public class UsuarioDAO {
     	em = emf.createEntityManager();
     }
     
-    public Usuario obter(int id) {
+    public Usuario getById(int id) {
         em.getTransaction().begin();
         Usuario usuario = em.find(Usuario.class, id);
         em.getTransaction().commit();

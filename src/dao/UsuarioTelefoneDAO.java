@@ -18,7 +18,7 @@ public class UsuarioTelefoneDAO {
     	em = emf.createEntityManager();
     }
     
-    public UsuarioTelefone obter(int id) {
+    public UsuarioTelefone getById(int id) {
         em.getTransaction().begin();
         UsuarioTelefone usuario_teletone = em.find(UsuarioTelefone.class, id);
         em.getTransaction().commit();
