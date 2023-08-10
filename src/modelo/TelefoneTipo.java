@@ -1,11 +1,22 @@
 package modelo;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
 import lombok.*;
 
+@Entity
 @Setter @Getter
+@Table( name = "telefone_tipo" )
 public class TelefoneTipo {
-	private int id_telefone_tipo;
-	private String nome;
+	@Id
+    @Column(name = "id_telefone_tipo")
+    private int id_telefone_tipo;
+	
+	@Column(name = "nome")
+    private String nome;
 	
 	public TelefoneTipo(int id_telefone_tipo, String nome) {
 		super();

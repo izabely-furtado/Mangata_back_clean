@@ -1,14 +1,29 @@
 package modelo;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
 import lombok.Getter;
 import lombok.Setter;
 
+@Entity
 @Setter @Getter
+@Table( name = "usuario_telefone" )
 public class UsuarioTelefone {
-	private int id_usuario;
-	private int ddd;
-	private String numero_telefone;
-	private int id_telefone_tipo;
+	@Id
+    @Column(name = "id_usuario")
+    private int id_usuario;
+	
+	@Column(name = "ddd")
+    private int ddd;
+	
+	@Column(name = "numero_telefone")
+    private String numero_telefone;
+	
+	@Column(name = "id_telefone_tipo")
+    private int id_telefone_tipo;
 	
 	public UsuarioTelefone(int id_usuario, int ddd, String numero_telefone, int id_telefone_tipo) {
 		super();
