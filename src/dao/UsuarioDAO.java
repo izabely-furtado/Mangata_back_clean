@@ -6,80 +6,68 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.OptimisticLockException;
 import javax.persistence.Persistence;
-import javax.transaction.Transactional;
 
 import modelo.Usuario;
 
-public class UsuarioDAO {
+public class UsuarioDAO implements EntityDAO<Usuario> {
 	private EntityManagerFactory emf = Persistence.createEntityManagerFactory("configBD");
-    private EntityManager em;
-	
-    public UsuarioDAO() {
-    	em = emf.createEntityManager();
-    }
-    
-    public Usuario getById(int id) {
-        em.getTransaction().begin();
-        Usuario usuario = em.find(Usuario.class, id);
-        em.getTransaction().commit();
-        return usuario;
-    }
-    
-    public Usuario criar(Usuario usuario) {
-        em.getTransaction().begin();
-        em.persist(usuario);
-        em.getTransaction().commit();
-        return usuario;
-    }
-    
-    public Usuario atualizar(Usuario usuario) {
-        em.getTransaction().begin();
-        usuario = em.merge(usuario);
-        em.getTransaction().commit();
-        return usuario;
-    }
+	private EntityManager em;
 
+	public UsuarioDAO() {
+		em = emf.createEntityManager();
+	}
 
-    public void remover(Usuario usuario) {
-        em.getTransaction().begin();
-        em.remove(usuario);
-        em.getTransaction().commit();
-    }
-    
-    @Transactional
-    public void removerByID(int id_usuario) {
-       int isSuccessful = em
-    		    .createQuery("delete from usuario p where p.id_usuario=:id_usuario")
-                .setParameter("id_usuario", id_usuario)
-                .executeUpdate();
-        if (isSuccessful == 0) {
-            throw new OptimisticLockException(" product modified concurrently");
-        }
-    }
+	@Override
+	public Usuario getById(int id) {
+		return em.find(Usuario.class, id);
+	}
 
-    @SuppressWarnings("unchecked")
-	public List<Usuario> getAll(){
-        List<Usuario> lista = em
-                .createQuery("SELECT p FROM usuario p")
-                .getResultList();
-        return lista;
-    }
-    
-    public Usuario getAllByID(int id_usuario){
-        Usuario retorno = (Usuario) em
-                .createQuery("SELECT p FROM usuario p WHERE id_usuario = :id_usuario")
-                .setParameter("id_usuario", id_usuario)
-                .getSingleResult();
-        return retorno;
-    }
-    
-    public Usuario getByLogin(Usuario usuario){
-    	Usuario retorno = (Usuario) em
-                .createQuery("SELECT * FROM usuario WHERE email = :email AND senha = :senha")
-                .setParameter("email", usuario.getEmail())
-                .setParameter("senha", usuario.getSenha())
-                .getSingleResult();
-        return retorno;
-    }
-	
+	@Override
+	public Usuario criar(Usuario usuario) {
+		em.getTransaction().begin();
+		em.persist(usuario);
+		em.getTransaction().commit();
+		return usuario;
+	}
+
+	@Override
+	public Usuario atualizar(Usuario usuario) {
+		em.getTransaction().begin();
+		usuario = em.merge(usuario);
+		em.getTransaction().commit();
+		return usuario;
+	}
+
+	@Override
+	public void remover(Usuario usuario) {
+		em.getTransaction().begin();
+		em.remove(usuario);
+		em.getTransaction().commit();
+	}
+
+	@Override
+	public void removerByID(int id_usuario) {
+		em.getTransaction().begin();
+		int isSuccessful = em.createQuery("DELETE FROM Usuario p WHERE p.id_usuario = :id_usuario")
+				.setParameter("id_usuario", id_usuario).executeUpdate();
+		if (isSuccessful == 0) {
+			throw new OptimisticLockException("User modified concurrently");
+		}
+		em.getTransaction().commit();
+	}
+
+	@Override
+	public List<Usuario> getAll() {
+		return em.createQuery("SELECT p FROM Usuario p", Usuario.class).getResultList();
+	}
+
+	public Usuario getAllByID(int id_usuario) {
+		return em.createQuery("SELECT p FROM Usuario p WHERE p.id_usuario = :id_usuario", Usuario.class)
+				.setParameter("id_usuario", id_usuario).getSingleResult();
+	}
+
+	public Usuario getByLogin(Usuario usuario) {
+		return em.createQuery("SELECT u FROM Usuario u WHERE u.email = :email AND u.senha = :senha", Usuario.class)
+				.setParameter("email", usuario.getEmail()).setParameter("senha", usuario.getSenha()).getSingleResult();
+	}
 }

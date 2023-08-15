@@ -10,7 +10,7 @@ import javax.transaction.Transactional;
 
 import modelo.UsuarioTelefone;
 
-public class UsuarioTelefoneDAO {
+public class UsuarioTelefoneDAO implements EntityDAO<UsuarioTelefone> {
 	private EntityManagerFactory emf = Persistence.createEntityManagerFactory("configBD");
     private EntityManager em;
 	
@@ -18,21 +18,24 @@ public class UsuarioTelefoneDAO {
     	em = emf.createEntityManager();
     }
     
-    public UsuarioTelefone getById(int id) {
+    @Override
+	public UsuarioTelefone getById(int id) {
         em.getTransaction().begin();
         UsuarioTelefone usuario_teletone = em.find(UsuarioTelefone.class, id);
         em.getTransaction().commit();
         return usuario_teletone;
     }
     
-    public UsuarioTelefone criar(UsuarioTelefone usuario_teletone) {
+    @Override
+	public UsuarioTelefone criar(UsuarioTelefone usuario_teletone) {
         em.getTransaction().begin();
         em.persist(usuario_teletone);
         em.getTransaction().commit();
         return usuario_teletone;
     }
     
-    public UsuarioTelefone atualizar(UsuarioTelefone usuario_teletone) {
+    @Override
+	public UsuarioTelefone atualizar(UsuarioTelefone usuario_teletone) {
         em.getTransaction().begin();
         usuario_teletone = em.merge(usuario_teletone);
         em.getTransaction().commit();
@@ -40,11 +43,23 @@ public class UsuarioTelefoneDAO {
     }
 
 
-    public void remover(UsuarioTelefone usuario_teletone) {
+    @Override
+	public void remover(UsuarioTelefone usuario_teletone) {
         em.getTransaction().begin();
         em.remove(usuario_teletone);
         em.getTransaction().commit();
     }
+    
+    @Override
+	public void removerByID(int id_usuario) {
+		em.getTransaction().begin();
+		int isSuccessful = em.createQuery("DELETE FROM usuario_telefone p WHERE p.id_usuario = :id_usuario")
+				.setParameter("id_usuario", id_usuario).executeUpdate();
+		if (isSuccessful == 0) {
+			throw new OptimisticLockException("User modified concurrently");
+		}
+		em.getTransaction().commit();
+	}
     
     @Transactional
     public void removerByIDUsuario(int id_usuario) {
@@ -57,21 +72,16 @@ public class UsuarioTelefoneDAO {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @Override
 	public List<UsuarioTelefone> getAll(){
-        List<UsuarioTelefone> lista = em
-                .createQuery("SELECT p FROM usuario_telefone p")
-                .getResultList();
-        return lista;
+    	return em.createQuery("SELECT p FROM usuario_telefone p", UsuarioTelefone.class).getResultList();
     }
     
     @SuppressWarnings("unchecked")
 	public List<UsuarioTelefone> getAllByUsuario(int id_usuario){
-        List<UsuarioTelefone> lista = em
-                .createQuery("SELECT p FROM usuario_telefone p WHERE id_usuario = :id_usuario")
+        return em.createQuery("SELECT p FROM usuario_telefone p WHERE id_usuario = :id_usuario")
                 .setParameter("id_usuario", id_usuario)
                 .getResultList();
-        return lista;
     }
     
     public UsuarioTelefone getAllByID(int id_usuario){
