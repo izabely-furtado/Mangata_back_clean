@@ -1,10 +1,12 @@
 package controlador;
 
+import java.io.IOException;
 import java.util.List;
 
 import javax.inject.Inject;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -28,15 +30,15 @@ public class UsuarioControlador extends HttpServlet {
 
     @DELETE
     @Path("/id/{id}")
-    public Response deletar(@PathParam("id") int id) {
+    public void deletar(@PathParam("id") int id, HttpServletResponse response) throws IOException {
     	usuarioService.deletar(id);
-        return MessageResponse.okResponse("Usuário com ID " + id + " excluído com sucesso.");
+    	response.getWriter().println("Usuário com ID " + id + " excluído com sucesso.");
     }
 
     @PUT
-    public Response atualizar(Usuario usuario) {
+    public void atualizar(Usuario usuario, HttpServletResponse response) throws IOException {
     	usuarioService.atualizar(usuario);
-        return MessageResponse.okResponse("Usuário com ID " + usuario.getId_usuario() + " atualizado com sucesso.");
+    	response.getWriter().println("Usuário com ID " + usuario.getId_usuario() + " atualizado com sucesso.");
     }
 
     @GET
@@ -49,21 +51,20 @@ public class UsuarioControlador extends HttpServlet {
     @GET
     @Path("/id/{id}")
     @Produces("application/json")
-    public Response obterUsuarioPorId(@PathParam("id") int id) {
-        Usuario usuario = usuarioService.obterPorId(id);
-        return MessageResponse.okResponse(usuario);
+    public Usuario obterUsuarioPorId(@PathParam("id") int id) {
+        return usuarioService.obterPorId(id);
     }
 
     @POST
     @Path("/criar")
     @Consumes("application/json")
     @Produces("application/json")
-    public Response criarUsuario(Usuario novoUsuario) {
+    public void criarUsuario(Usuario novoUsuario, HttpServletResponse response) throws IOException {
         try {
             Usuario usuarioCriado = usuarioService.criar(novoUsuario);
-            return MessageResponse.createdResponse("Usuário " + usuarioCriado.toString() + " criado com sucesso!");
+            response.getWriter().println("Usuário " + usuarioCriado.toString() + " criado com sucesso!");
         } catch (Exception e) {
-            return MessageResponse.errorResponse("Erro ao criar usuário.");
+        	response.getWriter().println("Erro ao criar usuário.");
         }
     }
 
