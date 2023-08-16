@@ -12,10 +12,10 @@ import modelo.Usuario;
 public class UsuarioService implements EntityService<Usuario> {
 
     @Inject
-    private UsuarioDAO usuarioDAO;
+    private UsuarioDAO usuarioDAO = new UsuarioDAO();
 
     @Inject
-    private UsuarioTelefoneDAO usuarioTelefoneDAO;
+    private UsuarioTelefoneDAO usuarioTelefoneDAO = new UsuarioTelefoneDAO();
 
     @Override
 	public void deletar(int id) {
@@ -29,7 +29,7 @@ public class UsuarioService implements EntityService<Usuario> {
 
     @Override
 	public List<Usuario> listar() {
-        return usuarioDAO.getAll();
+    	return usuarioDAO.getAll();
     }
 
     @Override
