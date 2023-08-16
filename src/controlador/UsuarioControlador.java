@@ -42,7 +42,7 @@ public class UsuarioControlador extends HttpServlet {
     }
 
     @GET
-    @Path("/listar")
+    @Path("")
     @Produces("application/json")
     public List<Usuario> listar() {
         return usuarioService.listar();
