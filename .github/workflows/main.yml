@@ -27,7 +27,7 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./Mangata_back_clean/target  # Caminho para o diretório de saída dos artefatos de construção do Maven
         publish_branch: gh-pages  # Branch para implantar (você pode personalizar)
-
+        publish_repo: https://github.com/izabely-furtado/Mangata_back_clean.git  # URL do repositório de destino do GitHub Pages
 
     - name: Cleanup
       run: rm -rf Mangata_back_clean/target  # Limpar os artefatos de construção após a implantação
